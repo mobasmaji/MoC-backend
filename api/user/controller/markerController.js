@@ -62,9 +62,15 @@ exports.getAll = async (req, res) => {
 };
 
 exports.getMarker = async (req, res) => {
-  
-    res.status(201).json({ data: "hiiiiii"});
-  
+  try {
+    let markers = await Marker.find({ username: req.body.username, id: req.body.id });
+    res.status(201).json({
+      status: "success",
+      data: markers
+    })
+  } catch (err) {
+    res.status(400).json({ err: err });
+  }
 
 };
 exports.updateMarker = async (req, res) => {
