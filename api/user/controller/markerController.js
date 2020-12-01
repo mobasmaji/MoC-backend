@@ -6,8 +6,15 @@ exports.addMarker = async (req, res) => {
   try {
     let newMarker = await Marker.find({ id: req.body.id });
     if (newMarker.length >= 1) {
-      return res.status(409).json({
+      return res.status(400).json({
         message: "id already in use"
+      });
+    }
+    if (!req.body.id || !req.body.name || !req.body.username || 
+        !req.body.lat || !req.body.lng || !req.body.type || 
+        !req.body.share) {
+      return res.status(400).json({
+        message: "An argument is missing"
       });
     }
     const marker = new Marker({
@@ -16,21 +23,19 @@ exports.addMarker = async (req, res) => {
       username: req.body.username,
       lat: req.body.lat,
       lng: req.body.lng,
-      description: req.body.description,
+      description: req.body.description ? req.body.description : "",
       type: req.body.type
 
     });
     let data = await marker.save();
-    if (req.body.shareWith.length > 0) {
-      for (const username of req.body.shareWith) {
-        const sharedMarker = new SharedMarker({
-          id: req.body.id,
-          username: username
-        });
-        await sharedMarker.save();
-      }
-    }
+    if (req.body.share) {
+      const sharedMarker = new SharedMarker({
+        id: req.body.id,
+        username: req.body.username
+      });
+      await sharedMarker.save();
 
+    }
     res.status(201).json({ data });
   } catch (err) {
     res.status(400).json({ err: err });
