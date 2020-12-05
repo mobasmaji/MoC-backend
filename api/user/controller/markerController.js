@@ -101,7 +101,7 @@ exports.updateMarker = async (req, res) => {
 
 exports.getShared = async (req, res) => {
   try {
-    let ids = await SharedMarker.find({ username: req.body.username }, { id: 1, _id: 0 });
+    let ids = await SharedMarker.find({ id: 1, _id: 0 });
     let markers = [];
     for (const id of ids) {
       const sharedMarkers = await Marker.find({ id: id.id });
