@@ -11,8 +11,7 @@ exports.addMarker = async (req, res) => {
       });
     }
     if (!req.body.id || !req.body.name || !req.body.username || 
-        !req.body.lat || !req.body.lng || !req.body.type || 
-        !req.body.share) {
+        !req.body.lat || !req.body.lng || !req.body.type) {
       return res.status(400).json({
         message: "An argument is missing"
       });
@@ -34,7 +33,6 @@ exports.addMarker = async (req, res) => {
         username: req.body.username
       });
       await sharedMarker.save();
-
     }
     res.status(201).json({ data });
   } catch (err) {
@@ -83,12 +81,25 @@ exports.updateMarker = async (req, res) => {
     let markers = await Marker.update({ id: req.body.id },
       {
         name: req.body.name,
-        username: req.body.username,
-        lat: req.body.lat,
-        lng: req.body.lng,
         description: req.body.description,
         type: req.body.type
       });
+      if (!req.body.share) {
+        // remove if exists or not, no error
+        await SharedMarker.remove({id: req.body.id});
+      } else {
+        // search if already shared
+        const data = await SharedMarker.find({id: req.body.id});
+        if(data.length == 0) {
+          const sharedMarker = new SharedMarker({
+            id: req.body.id,
+            username: req.body.username
+          });
+          await sharedMarker.save();
+        }
+        // else already exists and shared
+      }
+      
     res.status(201).json({
       status: "success",
       data: markers
